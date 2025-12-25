@@ -1,31 +1,34 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 
 app = Flask(__name__)
 
-# Cache simples em memória
-chunks = {}
+mc_to_rb = ""
+rb_to_mc = ""
 
-@app.route("/")
-def home():
-    return "MC ↔ Roblox Bridge Online"
+@app.route("/mc", methods=["POST"])
+def mc_chat():
+    global mc_to_rb
+    mc_to_rb = request.data.decode()
+    return "ok"
 
-@app.route("/uploadChunk", methods=["POST"])
-def upload_chunk():
-    data = request.json
-    key = f"{data['chunkX']}:{data['chunkZ']}"
-    chunks[key] = data
-    return {"status": "ok"}
+@app.route("/roblox", methods=["POST"])
+def rb_chat():
+    global rb_to_mc
+    rb_to_mc = request.data.decode()
+    return "ok"
 
-@app.route("/getChunk", methods=["GET"])
-def get_chunk():
-    x = request.args.get("x")
-    z = request.args.get("z")
-    key = f"{x}:{z}"
-    return jsonify(chunks.get(key, {}))
+@app.route("/mc", methods=["GET"])
+def get_mc():
+    global rb_to_mc
+    msg = rb_to_mc
+    rb_to_mc = ""
+    return msg
 
-@app.route("/chunks", methods=["GET"])
-def all_chunks():
-    return jsonify(chunks)
+@app.route("/roblox", methods=["GET"])
+def get_rb():
+    global mc_to_rb
+    msg = mc_to_rb
+    mc_to_rb = ""
+    return msg
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000)
+app.run(host="0.0.0.0", port=10000)
