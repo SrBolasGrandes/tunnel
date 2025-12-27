@@ -2,33 +2,29 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-mc_to_rb = ""
-rb_to_mc = ""
+mc_queue = []
+rb_queue = []
 
 @app.route("/mc", methods=["POST"])
-def mc_chat():
-    global mc_to_rb
-    mc_to_rb = request.data.decode()
+def mc_post():
+    mc_queue.append(request.data.decode())
     return "ok"
 
 @app.route("/roblox", methods=["POST"])
-def rb_chat():
-    global rb_to_mc
-    rb_to_mc = request.data.decode()
+def rb_post():
+    rb_queue.append(request.data.decode())
     return "ok"
 
 @app.route("/mc", methods=["GET"])
-def get_mc():
-    global rb_to_mc
-    msg = rb_to_mc
-    rb_to_mc = ""
-    return msg
+def mc_get():
+    if rb_queue:
+        return rb_queue.pop(0)
+    return ""
 
 @app.route("/roblox", methods=["GET"])
-def get_rb():
-    global mc_to_rb
-    msg = mc_to_rb
-    mc_to_rb = ""
-    return msg
+def rb_get():
+    if mc_queue:
+        return mc_queue.pop(0)
+    return ""
 
 app.run(host="0.0.0.0", port=10000)
